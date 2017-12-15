@@ -34,8 +34,9 @@ int main(){
     uint32_t * temparray = (uint32_t *)malloc(k*sizeof(uint32_t));
     uint32_t * tempptr = temparray + (k - j);
     while(firstk < array + j){
-        *(tempptr++) = fibpointed(firstj++, firstk++);
-        //fprintf(fileptr, "%u\n", *(tempptr-1));
+      //*(tempptr++) = fibpointed(firstj++, firstk++);
+      *(tempptr++) = (*(firstj++) + *(firstk++)) & m;
+      //fprintf(fileptr, "%u\n", *(tempptr-1));
     }
     for(int i = 0; i < k - j; i++){
         temparray[i] = array[i + j];
