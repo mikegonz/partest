@@ -1,0 +1,121 @@
+CC = cc -pedantic -std=c11
+NVCC = nvcc
+MPICC = mpicc -pedantic -std=c11
+HOST := $(shell hostname)
+ifeq ($(HOST),cisc372)
+RUN = srun -n 1 --gres=gpu:1
+MPIRUN = srun
+OMPRUN = srun -n 1 -c 40
+LIBS = -lgd
+FLAGS =
+FFMPEG = ffmpeg
+else
+# These work for OS X with GD installed by MacPorts.
+# edit as needed for your system...
+RUN = 
+MPIRUN = mpiexec
+OMPRUN = 
+LIBS = -lgd
+FLAGS = -I/opt/local/include -L/opt/local/lib 
+FFMPEG = ffmpeg
+endif
+
+CONFIG1 = -DBOUNDARY=1 -DK=0.1 -DM=100 -DNSTEPS=150 -DWSTEP=10 -DNX=10 -DPWIDTH=2 -DDEBUG
+CONFIG2 = -DBOUNDARY=1 -DK=0.1 -DM=100 -DNSTEPS=20000 -DWSTEP=500 -DNX=200 -DPWIDTH=2
+#CONFIG3 = -DBOUNDARY=2 -DK=0.1 -DM=100 -DNSTEPS=200000 -DWSTEP=0 -DNX=200 -DPWIDTH=2
+CONFIG3 = -DBOUNDARY=2 -DK=0.1 -DM=100 -DNSTEPS=1000 -DWSTEP=100 -DNX=2000 -DPWIDTH=2
+CONFIG4 = -DBOUNDARY=2 -DK=0.1 -DM=100 -DNSTEPS=1000 -DWSTEP=0 -DNX=3000 -DPWIDTH=2
+
+# Converts an animated GIF out.gif to an MPEG-4 movie video.mp4
+MOVOPTS = -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"
+
+######################### Sequential Verstion #########################
+
+s1.mp4: s1.exe
+	rm -f seqout/out* s1.mp4
+	$(RUN) ./s1.exe
+	$(FFMPEG) -i seqout/out.gif $(MOVOPTS) s1.mp4
+
+s1: s1.exe
+	rm -f seqout/out*
+	$(RUN) ./s1.exe
+
+s1.exe: diffusion2d.c Makefile
+	$(CC) -o s1.exe $(FLAGS) $(CONFIG1) diffusion2d.c $(LIBS)
+
+s2.mp4: s2.exe
+	rm -f seqout/out* s2.mp4
+	$(RUN) ./s2.exe
+	$(FFMPEG) -i seqout/out.gif $(MOVOPTS) s2.mp4
+
+s2: s2.exe
+	rm -f seqout/out*
+	$(RUN) ./s2.exe
+
+s2.exe: diffusion2d.c Makefile
+	$(CC) -o s2.exe $(FLAGS) $(CONFIG2)  diffusion2d.c $(LIBS)
+
+s3: s3.exe
+	rm -f seqout/out*
+	$(RUN) ./s3.exe
+
+s3.exe: diffusion2d.c Makefile
+	$(CC) -o s3.exe $(FLAGS) $(CONFIG3)  diffusion2d.c $(LIBS)
+
+
+######################### Parallel Version #########################
+
+cu1.exe: lfgpar.cu Makefile
+	$(NVCC) -o cu1.exe $(FLAGS) $(CONFIG1) lfgpar.cu $(LIBS)
+
+cu1: cu1.exe
+	$(RUN) ./cu1.exe
+
+cu2.exe: diffusion2d.cu Makefile
+	$(NVCC) -o cu2.exe $(FLAGS) $(CONFIG2) diffusion2d.cu $(LIBS)
+
+cu2: cu2.exe
+	rm -f parout/out*
+	$(RUN) ./cu2.exe
+
+cu3.exe: diffusion2d.cu Makefile
+	$(NVCC) -o cu3.exe $(FLAGS) $(CONFIG3) diffusion2d.cu $(LIBS)
+
+cu3: cu3.exe
+	rm -f parout/out*
+	$(RUN) ./cu3.exe
+
+cu4.exe: diffusion2d.cu Makefile
+	$(NVCC) -o cu4.exe $(FLAGS) $(CONFIG4) diffusion2d.cu $(LIBS)
+
+cu4: cu4.exe
+	rm -f parout/out*
+	$(RUN) ./cu4.exe
+
+omp4.exe: diffusion2d_omp.c Makefile
+	$(CC) -o omp4.exe $(FLAGS) $(CONFIG4) diffusion2d_omp.c $(LIBS)
+
+omp4: omp4.exe
+	rm -f parout/out*
+	$(OMPRUN) ./omp4.exe 40
+
+mpi4.exe: diffusion2d_striped.c Makefile
+	$(MPICC) -o mpi4.exe $(FLAGS) $(CONFIG4) diffusion2d_striped.c $(LIBS)
+
+mpi4: mpi4.exe
+	rm -f parout/out*
+	$(MPIRUN) -n 40 ./mpi4.exe
+
+## Test
+
+test1: cu1 s1
+	diff parout/out.gif seqout/out.gif
+
+test2: cu2 s2
+	diff parout/out.gif seqout/out.gif
+
+test3: cu3 s3
+	diff parout/out.gif seqout/out.gif
+
+clean:
+	rm -f *.mp4 *.exe a.out *.o *~ seqout/* parout/*
