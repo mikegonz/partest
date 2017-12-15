@@ -1,0 +1,69 @@
+mikegonz@cisc372:~/parrepo/cuda$ nvcc -o cu1.exe -Xcompiler -fopenmp lfgpar.cu
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.906s
+user	0m0.005s
+sys	0m0.013s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.291s
+user	0m0.003s
+sys	0m0.013s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.795s
+user	0m0.005s
+sys	0m0.013s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.681s
+user	0m0.011s
+sys	0m0.006s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.321s
+user	0m0.000s
+sys	0m0.020s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.918s
+user	0m0.000s
+sys	0m0.017s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.831s
+user	0m0.017s
+sys	0m0.012s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1 -c 40 --gres=gpu:1 ./cu1.exe
+
+real	0m5.503s
+user	0m0.009s
+sys	0m0.009s
+mikegonz@cisc372:~/parrepo/cuda$ emacs lfgpar.cu
+mikegonz@cisc372:~/parrepo/cuda$ nvcc -o cu1.exe lfgpar.cu
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1  --gres=gpu:1 ./cu1.exe
+
+real	0m7.437s
+user	0m0.008s
+sys	0m0.008s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1  --gres=gpu:1 ./cu1.exe
+
+real	0m7.397s
+user	0m0.016s
+sys	0m0.000s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1  --gres=gpu:1 ./cu1.exe
+
+real	0m7.215s
+user	0m0.015s
+sys	0m0.000s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1  --gres=gpu:1 ./cu1.exe
+
+real	0m7.345s
+user	0m0.015s
+sys	0m0.000s
+mikegonz@cisc372:~/parrepo/cuda$ time srun -n 1  --gres=gpu:1 ./cu1.exe
+
+real	0m7.378s
+user	0m0.004s
+sys	0m0.011s
+
