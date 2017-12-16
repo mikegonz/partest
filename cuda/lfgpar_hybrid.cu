@@ -49,14 +49,17 @@ int main(int argc, char * argv[]){
     dim3 numBlocks(ceil(LAG1 / 1024.0));
     dim3 threadsPerBlock(ceil(LAG1 / ((float) numBlocks.x)));
     while(iters-- > 0){
-    
-        lfgkernel<<<numBlocks, threadsPerBlock>>>(d_arr, d_newarr);
+      uint32_t * temparray = (uint32_t *)malloc(LAG2 * sizeof(uint32_t));
+      lfgkernel<<<numBlocks, threadsPerBlock>>>(d_arr, d_newarr);
 #pragma omp parallel for shared(statearray)
-        for(int i = 0; i < (LAG2 - LAG1); i++)
-            statearray[i] = statearray[i + LAG1];
-        cudaDeviceSynchronize();
-        cudaMemcpy(statearray + (LAG2 - LAG1), d_newarr, LAG1*sizeof(uint32_t), cudaMemcpyDeviceToHost);
-        //for(int i = (LAG2 - LAG1); i < LAG2; i++) printf("%u\n", statearray[i]);
+      for(int i = 0; i < (LAG2 - LAG1); i++)
+	temparray[i] = statearray[i + LAG1];
+      cudaDeviceSynchronize();
+      cudaMemcpy(temparray + (LAG2 - LAG1), d_newarr, LAG1*sizeof(uint32_t), cudaMemcpyDeviceToHost);
+      uint32_t * trash = statearray;
+      statearray = temparray;
+      free(trash);
+      //for(int i = (LAG2 - LAG1); i < LAG2; i++) printf("%u\n", statearray[i]);
     }
     cudaFree(d_arr);
     cudaFree(d_newarr);
